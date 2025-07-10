@@ -11,7 +11,9 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
     public enum GameState {
         MENU,
         PLAYING,
-        GAME_OVER
+        GAME_OVER,
+        END,
+        TRANSITION
     }
 
     public enum ViewState {
@@ -27,12 +29,20 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
 
     private GameState gameState = GameState.MENU;
     private ViewState viewState = ViewState.OFFICE;
+    private int currentNight = 1;
+    private int currentHour = 12;
+    private long lastHourStartTime = System.currentTimeMillis();
+
+    private PowerManager powerManager = new PowerManager();
 
     private Image defaultImg;
+    private Image endScreen;
 
-    private final int defautTextSize = 20;
-    private final Font defaultFont = new Font("Arial", Font.PLAIN, defautTextSize);
-    private final Font titleFont = new Font("Arial", Font.BOLD, 36);
+    private final int defaultTextSize = 20;
+    private final Font defaultFont = new Font("Arial", Font.PLAIN, defaultTextSize);
+    private final Font titleFont = new Font("Arial", Font.BOLD, defaultTextSize + defaultTextSize / 2);
+    private final Font smallFont = new Font("Arial", Font.BOLD, defaultTextSize - 5);
+
 
     private Rectangle cameraButton = new Rectangle(WIDTH / 2 - WIDTH / 4, HEIGHT - HEIGHT / 10, WIDTH / 2, HEIGHT / 11);
     private boolean cameraButtonClicked = false;
@@ -46,6 +56,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
 
         try {
             defaultImg = ImageIO.read(getClass().getResource("/resources/fn_mold.png"));
+            endScreen = defaultImg;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -72,7 +83,31 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
     }
 
     private void update() {
+        if (gameState == GameState.PLAYING) {
+            if (currentNight >= 7) {
+                gameState = GameState.END;
+            } else {
+                powerManager.update();
+                if (powerManager.isPowerDepleted()) {
+                    gameState = GameState.GAME_OVER;
+                }
 
+                long currentTime = System.currentTimeMillis();
+                if (currentTime - lastHourStartTime >= 89000) {
+                    if (currentHour == 12) {
+                        currentHour = 1;
+                    } else if (currentHour == 5) {
+                        currentNight++;
+                        currentHour = 12;
+                        powerManager.reset();
+                    }else {
+                        currentHour += 1;
+                    }
+                    lastHourStartTime = currentTime;
+                }
+            }
+
+        }
     }
 
     protected void paintComponent(Graphics g) {
@@ -101,11 +136,12 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
                     g.drawImage(scaledImage, 0, 0, null);
                 }
             } else if (viewState == ViewState.CAMERA){
-                g.setColor(Color.WHITE);
+                g.setColor(Color.BLACK);
                 g.fillRect(0, 0, WIDTH, HEIGHT);
             }
 
             drawPowerStats(g, 10, HEIGHT - 40);
+            drawTimeStats(g, WIDTH - 100, 30);
         }
 
         if(gameState == GameState.GAME_OVER) {
@@ -124,26 +160,52 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
             g.drawString(gameOverText, x, y);
         }
 
+        if (gameState == GameState.END) {
+            if (endScreen != null) {
+                Image scaledImage = endScreen.getScaledInstance(WIDTH, HEIGHT, Image.SCALE_DEFAULT);
+                g.drawImage(scaledImage, 0, 0, null);
+
+                g.setColor(Color.WHITE);
+                g.setFont(titleFont);
+
+                String endText = "END";
+                FontMetrics fm = g.getFontMetrics();
+                int textWidth = fm.stringWidth(endText);
+                int x = (WIDTH - textWidth) / 2;
+                int y = HEIGHT / 2;
+
+                g.drawString(endText, x, y);
+            }
+        }
     }
 
     private void drawPowerStats(Graphics g, int x, int y) {
         g.setColor(Color.WHITE);
         g.setFont(defaultFont);
-        g.drawString("Power left: 100%", x, y);
+        g.drawString("Power left: " + (int) powerManager.getPowerLevel() + "%", x, y);
 
-        g.drawString("Usage:", x, y + defautTextSize + 5);
+        g.drawString("Usage:", x, y + defaultTextSize + 5);
         FontMetrics fm = g.getFontMetrics();
         int usageTextWidth = fm.stringWidth("Usage:");
         int barStartX = x + usageTextWidth + 10;
-        int barY = y + defautTextSize - 10;
+        int barY = y + defaultTextSize - 10;
 
-        g.setColor(Color.GREEN);
-        g.fillRect(barStartX , barY, 5, defautTextSize);
-        g.fillRect(barStartX + 10, barY, 5, defautTextSize);
-        g.setColor(Color.ORANGE);
-        g.fillRect(barStartX + 20, barY, 5, defautTextSize);
-        g.setColor(Color.RED);
-        g.fillRect(barStartX + 30, barY, 5, defautTextSize);
+        if (powerManager.getPowerUsage() >= 0) {
+            g.setColor(Color.GREEN);
+            g.fillRect(barStartX , barY, 5, defaultTextSize);
+        }
+        if (powerManager.getPowerUsage() >= 1) {
+            g.setColor(Color.GREEN);
+            g.fillRect(barStartX + 10, barY, 5, defaultTextSize);
+        }
+        if (powerManager.getPowerUsage() >= 2) {
+            g.setColor(Color.ORANGE);
+            g.fillRect(barStartX + 20, barY, 5, defaultTextSize);
+        }
+        if (powerManager.getPowerUsage() >= 3) {
+            g.setColor(Color.RED);
+            g.fillRect(barStartX + 30, barY, 5, defaultTextSize);
+        }
 
         if (cameraButtonClicked) {
             g.setColor(Color.GREEN);
@@ -155,12 +217,19 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
         g.drawString("SWITCH CAM", cameraButton.x + 30, cameraButton.y + 25);
     }
 
+    private void drawTimeStats(Graphics g, int x, int y) {
+        g.setColor(Color.WHITE);
+        g.setFont(defaultFont);
+        g.drawString(currentHour + " AM", x, y);
+        g.setFont(smallFont);
+        g.drawString("NIGHT " + currentNight, x, y + defaultTextSize + 5);
+    }
+
     @Override
     public void mouseClicked(MouseEvent e) {
         if (gameState == GameState.MENU) {
             gameState = GameState.PLAYING;
-        } else if (gameState == GameState.PLAYING) {
-            //TODO
+            powerManager.reset();
         } else if (gameState == GameState.GAME_OVER) {
             System.exit(0);
         }
@@ -174,9 +243,11 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
                     cameraButtonClicked = !cameraButtonClicked;
                     if (viewState == ViewState.OFFICE) {
                         viewState = ViewState.CAMERA;
+                        powerManager.setPowerUsage(powerManager.getPowerUsage() + 1);
                         repaint();
                     } else if (viewState == ViewState.CAMERA) {
                         viewState = ViewState.OFFICE;
+                        powerManager.setPowerUsage(powerManager.getPowerUsage() - 1);
                         repaint();
                     }
                     hovering = true;
