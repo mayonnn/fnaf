@@ -28,12 +28,14 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
     private boolean running;
 
     private GameState gameState = GameState.MENU;
-    private ViewState viewState = ViewState.OFFICE;
     private int currentNight = 1;
     private int currentHour = 12;
     private long lastHourStartTime = System.currentTimeMillis();
 
     private PowerManager powerManager = new PowerManager();
+
+    private CameraManager cameraManager;
+    private ViewState viewState;
 
     private Image defaultImg;
     private Image endScreen;
@@ -44,15 +46,13 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
     private final Font smallFont = new Font("Arial", Font.BOLD, defaultTextSize - 5);
 
 
-    private Rectangle cameraButton = new Rectangle(WIDTH / 2 - WIDTH / 4, HEIGHT - HEIGHT / 10, WIDTH / 2, HEIGHT / 11);
-    private boolean cameraButtonClicked = false;
-    private boolean hovering = false;
-
-
     public GamePanel() {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
         addMouseListener(this);
         addMouseMotionListener(this);
+
+        cameraManager = new CameraManager(WIDTH, HEIGHT, powerManager);
+        viewState = cameraManager.getViewState();
 
         try {
             defaultImg = ImageIO.read(getClass().getResource("/resources/fn_mold.png"));
@@ -140,8 +140,9 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
                 g.fillRect(0, 0, WIDTH, HEIGHT);
             }
 
-            drawPowerStats(g, 10, HEIGHT - 40);
+            powerManager.drawPowerStats(g, 10, HEIGHT - 40, defaultFont);
             drawTimeStats(g, WIDTH - 100, 30);
+            cameraManager.drawButton(g, defaultFont);
         }
 
         if(gameState == GameState.GAME_OVER) {
@@ -179,44 +180,6 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
         }
     }
 
-    private void drawPowerStats(Graphics g, int x, int y) {
-        g.setColor(Color.WHITE);
-        g.setFont(defaultFont);
-        g.drawString("Power left: " + (int) powerManager.getPowerLevel() + "%", x, y);
-
-        g.drawString("Usage:", x, y + defaultTextSize + 5);
-        FontMetrics fm = g.getFontMetrics();
-        int usageTextWidth = fm.stringWidth("Usage:");
-        int barStartX = x + usageTextWidth + 10;
-        int barY = y + defaultTextSize - 10;
-
-        if (powerManager.getPowerUsage() >= 0) {
-            g.setColor(Color.GREEN);
-            g.fillRect(barStartX , barY, 5, defaultTextSize);
-        }
-        if (powerManager.getPowerUsage() >= 1) {
-            g.setColor(Color.GREEN);
-            g.fillRect(barStartX + 10, barY, 5, defaultTextSize);
-        }
-        if (powerManager.getPowerUsage() >= 2) {
-            g.setColor(Color.ORANGE);
-            g.fillRect(barStartX + 20, barY, 5, defaultTextSize);
-        }
-        if (powerManager.getPowerUsage() >= 3) {
-            g.setColor(Color.RED);
-            g.fillRect(barStartX + 30, barY, 5, defaultTextSize);
-        }
-
-        if (cameraButtonClicked) {
-            g.setColor(Color.GREEN);
-        } else {
-            g.setColor(Color.LIGHT_GRAY);
-        }
-
-        g.drawRect(cameraButton.x, cameraButton.y, cameraButton.width, cameraButton.height);
-        g.drawString("SWITCH CAM", cameraButton.x + 30, cameraButton.y + 25);
-    }
-
     private void drawTimeStats(Graphics g, int x, int y) {
         g.setColor(Color.WHITE);
         g.setFont(defaultFont);
@@ -238,23 +201,9 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
     @Override
     public void mouseMoved(MouseEvent e) {
         if (gameState == GameState.PLAYING) {
-            if (cameraButton.contains(e.getPoint())) {
-                if (!hovering) {
-                    cameraButtonClicked = !cameraButtonClicked;
-                    if (viewState == ViewState.OFFICE) {
-                        viewState = ViewState.CAMERA;
-                        powerManager.setPowerUsage(powerManager.getPowerUsage() + 1);
-                        repaint();
-                    } else if (viewState == ViewState.CAMERA) {
-                        viewState = ViewState.OFFICE;
-                        powerManager.setPowerUsage(powerManager.getPowerUsage() - 1);
-                        repaint();
-                    }
-                    hovering = true;
-                }
-            } else if (hovering) {
-                hovering = false;
-            }
+            cameraManager.handleMouseMoved(e.getPoint());
+            viewState = cameraManager.getViewState();
+            repaint();
         }
     }
 
