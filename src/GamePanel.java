@@ -21,8 +21,8 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
         CAMERA
     }
 
-    private static final int WIDTH = 1000;
-    private static final int HEIGHT = 600;
+    public static final int WIDTH = 1000;
+    public static final int HEIGHT = 600;
 
     private Thread thread;
     private boolean running;
@@ -156,7 +156,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
 
             powerManager.drawPowerStats(g, 10, HEIGHT - 40, defaultFont);
             drawTimeStats(g, WIDTH - 100, 30);
-            cameraManager.drawButton(g, defaultFont);
+            cameraManager.draw(g, defaultFont);
         }
 
         if(gameState == GameState.GAME_OVER) {
@@ -208,10 +208,14 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
             gameState = GameState.PLAYING;
             powerManager.reset();
         } else if (gameState == GameState.PLAYING) {
-            doorLeft.handleClick(e.getPoint());
-            doorRight.handleClick(e.getPoint());
-            repaint();
-        }else if (gameState == GameState.GAME_OVER) {
+            if (viewState == ViewState.OFFICE) {
+                doorLeft.handleClick(e.getPoint());
+                doorRight.handleClick(e.getPoint());
+            } else if (viewState == ViewState.CAMERA) {
+                cameraManager.handleMouseClicked(e.getPoint());
+            }
+
+        } else if (gameState == GameState.GAME_OVER) {
             System.exit(0);
         }
     }
@@ -227,14 +231,18 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
 
     @Override
     public void mousePressed(MouseEvent e) {
-        doorLeft.handleMousePressed(e.getPoint());
-        doorRight.handleMousePressed(e.getPoint());
+        if (viewState == ViewState.OFFICE) {
+            doorLeft.handleMousePressed(e.getPoint());
+            doorRight.handleMousePressed(e.getPoint());
+        }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        doorLeft.handleMouseReleased(e.getPoint());
-        doorRight.handleMouseReleased(e.getPoint());
+        if (viewState == ViewState.OFFICE) {
+            doorLeft.handleMouseReleased(e.getPoint());
+            doorRight.handleMouseReleased(e.getPoint());
+        }
     }
 
     @Override

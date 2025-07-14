@@ -50,11 +50,13 @@ public class Door {
             g.fillRect(buttonBounds.x, buttonBounds.y, buttonBounds.width, buttonBounds.height);
         } else {
             if (doorLight.lightOn) {
-                g.setColor(Color.WHITE);
+                if (jonesy != null) {
+                    Image scaledImage = jonesy.getScaledInstance(width, height, Image.SCALE_DEFAULT);
+                    g.drawImage(scaledImage, x, y, null);
+                }
+            } else {
+                g.setColor(Color.BLACK);
                 g.fillRect(x, y, width, height);
-            } else if (jonesy != null) {
-                Image scaledImage = jonesy.getScaledInstance(width, height, Image.SCALE_DEFAULT);
-                g.drawImage(scaledImage, x, y, null);
             }
             g.setColor(Color.red);
             g.fillRect(buttonBounds.x, buttonBounds.y, buttonBounds.width, buttonBounds.height);
