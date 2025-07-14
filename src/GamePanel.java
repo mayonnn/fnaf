@@ -21,7 +21,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
         CAMERA
     }
 
-    private static final int WIDTH = 800;
+    private static final int WIDTH = 1000;
     private static final int HEIGHT = 600;
 
     private Thread thread;
@@ -45,6 +45,14 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
     private final Font titleFont = new Font("Arial", Font.BOLD, defaultTextSize + defaultTextSize / 2);
     private final Font smallFont = new Font("Arial", Font.BOLD, defaultTextSize - 5);
 
+    private Door doorLeft;
+    private Door doorRight;
+    private int doorWidth = 200;
+    private int doorHeight = 400;
+    private int doorLeftX = 70;
+    private int doorRightX = WIDTH - doorWidth - doorLeftX;
+    private int doorY = 70;
+
 
     public GamePanel() {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
@@ -53,6 +61,10 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
 
         cameraManager = new CameraManager(WIDTH, HEIGHT, powerManager);
         viewState = cameraManager.getViewState();
+
+        doorLeft = new Door(doorLeftX, doorY, doorWidth, doorHeight, Door.Side.LEFT, powerManager);
+        doorRight = new Door(doorRightX, doorY, doorWidth, doorHeight, Door.Side.RIGHT, powerManager);
+
 
         try {
             defaultImg = ImageIO.read(getClass().getResource("/resources/fn_mold.png"));
@@ -135,6 +147,8 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
                     Image scaledImage = defaultImg.getScaledInstance(WIDTH, HEIGHT, Image.SCALE_DEFAULT);
                     g.drawImage(scaledImage, 0, 0, null);
                 }
+                doorLeft.draw(g);
+                doorRight.draw(g);
             } else if (viewState == ViewState.CAMERA){
                 g.setColor(Color.BLACK);
                 g.fillRect(0, 0, WIDTH, HEIGHT);
@@ -193,7 +207,11 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
         if (gameState == GameState.MENU) {
             gameState = GameState.PLAYING;
             powerManager.reset();
-        } else if (gameState == GameState.GAME_OVER) {
+        } else if (gameState == GameState.PLAYING) {
+            doorLeft.handleClick(e.getPoint());
+            doorRight.handleClick(e.getPoint());
+            repaint();
+        }else if (gameState == GameState.GAME_OVER) {
             System.exit(0);
         }
     }
@@ -208,17 +226,19 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
     }
 
     @Override
-    public void mouseDragged(MouseEvent e) {
-
-    }
-
-    @Override
     public void mousePressed(MouseEvent e) {
-
+        doorLeft.handleMousePressed(e.getPoint());
+        doorRight.handleMousePressed(e.getPoint());
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
+        doorLeft.handleMouseReleased(e.getPoint());
+        doorRight.handleMouseReleased(e.getPoint());
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
 
     }
 
