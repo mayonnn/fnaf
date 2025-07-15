@@ -1,3 +1,7 @@
+package entities;
+
+import managers.PowerManager;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.IOException;

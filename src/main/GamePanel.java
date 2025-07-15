@@ -1,3 +1,5 @@
+package main;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -7,6 +9,10 @@ import java.awt.event.MouseMotionListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+
+import managers.*;
+import scenes.*;
 
 public class GamePanel extends JPanel implements Runnable, MouseListener, MouseMotionListener {
 
@@ -32,11 +38,16 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
         addMouseListener(this);
         addMouseMotionListener(this);
 
+        PlayingScene playingScene = new PlayingScene(gameStateManager);
+        TransitionScene transitionScene = new TransitionScene(gameStateManager, playingScene);
+        EndScene endScene = new EndScene(gameStateManager);
+        playingScene.setNightCycleManager(new NightCycleManager(gameStateManager, transitionScene));
+
         scenes.put(GameStateManager.GameState.MENU, new MenuScene(gameStateManager));
-        scenes.put(GameStateManager.GameState.PLAYING, new PlayingScene(gameStateManager));
+        scenes.put(GameStateManager.GameState.PLAYING, playingScene);
+        scenes.put(GameStateManager.GameState.TRANSITION, transitionScene);
         scenes.put(GameStateManager.GameState.GAME_OVER, new GameOverScene(gameStateManager));
         scenes.put(GameStateManager.GameState.END, new EndScene(gameStateManager));
-
     }
 
     public void startGame() {
@@ -65,7 +76,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
         }
 
         if (gameStateManager.getGameState() == GameStateManager.GameState.TRANSITION) {
-            scenes.get(gameStateManager.getGameState()).transitionUpdate();
+            scenes.get(GameStateManager.GameState.TRANSITION).update();
         }
     }
 
@@ -77,7 +88,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
             case PLAYING -> scenes.get(GameStateManager.GameState.PLAYING).render(g);
             case GAME_OVER -> scenes.get(GameStateManager.GameState.GAME_OVER).render(g);
             case END -> scenes.get(GameStateManager.GameState.END).render(g);
-            case TRANSITION -> scenes.get(gameStateManager.getGameState()).transitionRender(g);
+            case TRANSITION -> scenes.get(GameStateManager.GameState.TRANSITION).render(g);
         }
     }
 
@@ -87,9 +98,9 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
     public void mouseClicked(MouseEvent e) {
         if (gameStateManager.getGameState() == GameStateManager.GameState.MENU) {
             gameStateManager.setGameState(GameStateManager.GameState.PLAYING);
-            ((PlayingScene)scenes.get(GameStateManager.GameState.PLAYING)).resetPowerManager();
+            ((PlayingScene)scenes.get(GameStateManager.GameState.PLAYING)).reset();
         } else if (gameStateManager.getGameState() == GameStateManager.GameState.PLAYING) {
-            ((PlayingScene)scenes.get(GameStateManager.GameState.PLAYING)).handleMouseClicked(e.getPoint());
+            (scenes.get(GameStateManager.GameState.PLAYING)).handleMouseClicked(e.getPoint());
         } else if (gameStateManager.getGameState() == GameStateManager.GameState.GAME_OVER) {
             System.exit(0);
         }

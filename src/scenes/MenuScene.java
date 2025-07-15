@@ -1,8 +1,14 @@
+package scenes;
+
+import main.GamePanel;
+import managers.GameStateManager;
+
 import java.awt.*;
 
-public class GameOverScene implements GameScene{
-    GameStateManager gameStateManager = new GameStateManager();
-    public GameOverScene(GameStateManager gameStateManager) {
+public class MenuScene implements GameScene{
+    private GameStateManager gameStateManager = new GameStateManager();
+
+    public MenuScene(GameStateManager gameStateManager) {
         this.gameStateManager = gameStateManager;
     }
 
@@ -19,12 +25,12 @@ public class GameOverScene implements GameScene{
         g.setColor(Color.RED);
         g.setFont(GamePanel.titleFont);
 
-        String gameOverText = "GAME OVER";
+        String clickToPlayText = "CLICK TO PLAY";
         FontMetrics fm = g.getFontMetrics();
-        int textWidth = fm.stringWidth(gameOverText);
+        int textWidth = fm.stringWidth(clickToPlayText);
         int x = (GamePanel.WIDTH - textWidth) / 2;
         int y = GamePanel.HEIGHT / 2;
 
-        g.drawString(gameOverText, x, y);
+        g.drawString(clickToPlayText, x, y);
     }
 }

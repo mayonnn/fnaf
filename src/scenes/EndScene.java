@@ -1,4 +1,11 @@
+package scenes;
+
+import main.GamePanel;
+import managers.GameStateManager;
+
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.io.IOException;
 
 public class EndScene implements GameScene{
     private Image endScreen;
@@ -6,6 +13,11 @@ public class EndScene implements GameScene{
 
     public EndScene(GameStateManager gameStateManager) {
         this.gameStateManager = new GameStateManager();
+        try {
+            endScreen = ImageIO.read(getClass().getResource("/resources/office.png"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -29,6 +41,9 @@ public class EndScene implements GameScene{
             int y = GamePanel.HEIGHT / 2;
 
             g.drawString(endText, x, y);
+        } else {
+            g.setColor(Color.green);
+            g.fillRect(0, 0, GamePanel.WIDTH, GamePanel.HEIGHT);
         }
     }
 }

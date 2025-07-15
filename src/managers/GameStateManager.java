@@ -1,3 +1,5 @@
+package managers;
+
 public class GameStateManager {
     public enum GameState {
         MENU,

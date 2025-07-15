@@ -1,3 +1,5 @@
+package managers;
+
 import java.awt.*;
 
 public class PowerManager {

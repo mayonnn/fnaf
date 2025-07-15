@@ -1,3 +1,8 @@
+package managers;
+
+import main.GamePanel;
+import scenes.PlayingScene;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.IOException;
@@ -24,6 +29,12 @@ public class CameraManager {
         int buttonX = panelWidth / 2 - panelWidth / 4;
         int buttonY = panelHeight - panelHeight / 10;
         cameraButton = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
+    }
+
+    public void reset() {
+        viewState = PlayingScene.ViewState.OFFICE;
+        cameraButtonClicked = false;
+        hovering = false;
     }
 
     public void handleMouseMoved(Point p) {

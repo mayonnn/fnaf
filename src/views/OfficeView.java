@@ -1,3 +1,9 @@
+package views;
+
+import entities.Door;
+import main.GamePanel;
+import managers.PowerManager;
+
 import java.awt.*;
 
 public class OfficeView {
