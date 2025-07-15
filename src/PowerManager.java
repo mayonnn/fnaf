@@ -61,6 +61,7 @@ public class PowerManager {
 
     public void reset() {
         powerLevel = MAX_POWER;
+        powerUsage = 0;
         lastPowerDrainTime = System.currentTimeMillis();
     }
 

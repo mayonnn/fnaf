@@ -13,7 +13,7 @@ public class CameraManager {
 
     CameraMap cameraMap = new CameraMap();
 
-    private GamePanel.ViewState viewState = GamePanel.ViewState.OFFICE;
+    private PlayingScene.ViewState viewState = PlayingScene.ViewState.OFFICE;
     private PowerManager powerManager;
 
     public CameraManager(int panelWidth, int panelHeight, PowerManager powerManager) {
@@ -43,11 +43,11 @@ public class CameraManager {
 
     private void toggleCamera() {
         cameraButtonClicked = !cameraButtonClicked;
-        if (viewState == GamePanel.ViewState.OFFICE) {
-            viewState = GamePanel.ViewState.CAMERA;
+        if (viewState == PlayingScene.ViewState.OFFICE) {
+            viewState = PlayingScene.ViewState.CAMERA;
             powerManager.increasePowerUsage();
-        } else if (viewState == GamePanel.ViewState.CAMERA) {
-            viewState = GamePanel.ViewState.OFFICE;
+        } else if (viewState == PlayingScene.ViewState.CAMERA) {
+            viewState = PlayingScene.ViewState.OFFICE;
             powerManager.decreasePowerUsage();
         }
     }
@@ -55,7 +55,7 @@ public class CameraManager {
     public void draw(Graphics g, Font font) {
         if (cameraButtonClicked) {
             g.setColor(Color.GREEN);
-            cameraMap.draw(g);
+            cameraMap.draw(g, font);
         } else {
             g.setColor(Color.LIGHT_GRAY);
         }
@@ -66,7 +66,7 @@ public class CameraManager {
         g.drawString("SWITCH CAM", cameraButton.x + 30, cameraButton.y + 25);
     }
 
-    public GamePanel.ViewState getViewState() {
+    public PlayingScene.ViewState getViewState() {
         return viewState;
     }
 
@@ -115,7 +115,7 @@ public class CameraManager {
             }
         }
 
-        public void draw(Graphics g) {
+        public void draw(Graphics g, Font font) {
             if (selectedButton != null && camImg.containsKey(selectedButton)) {
                 Image scaledImage = camImg.get(selectedButton).getScaledInstance(
                         GamePanel.WIDTH, GamePanel.HEIGHT, Image.SCALE_DEFAULT
@@ -131,6 +131,7 @@ public class CameraManager {
                 g.fillRect(rect.x, rect.y, rect.width, rect.height);
 
                 g.setColor(Color.WHITE);
+                g.setFont(font);
                 g.drawString(camId, rect.x + 3, rect.y + rect.height - 4);
 
             }

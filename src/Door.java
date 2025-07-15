@@ -17,6 +17,9 @@ public class Door {
 
     private Image jonesy;
 
+    private Polygon door = new Polygon();
+    private double slopeFactor = 0.5;
+
 
     public Door(int x, int y, int width, int height, Side side, PowerManager powerManager) {
         this.x = x;
@@ -25,6 +28,18 @@ public class Door {
         this.height = height;
         this.side = side;
         this.powerManager = powerManager;
+
+        if (side == Side.LEFT) {
+            door.addPoint(x, y);               // top-left
+            door.addPoint(x + width, (int) (y + width * slopeFactor));               // top-right
+            door.addPoint(x + width, (int) (y + height - width * slopeFactor));      // bottom-right
+            door.addPoint(x, y + height);              // bottom-left
+        } else {
+            door.addPoint(x, (int) (y + width * slopeFactor));                       // top-left
+            door.addPoint(x + width, y);       // top-right
+            door.addPoint(x + width, y + height);      // bottom-right
+            door.addPoint(x, (int) (y + height - width * slopeFactor));              // bottom-left
+        }
 
         setupLayout();
         doorLight = new DoorLight();
@@ -45,14 +60,17 @@ public class Door {
     public void draw(Graphics g) {
         if (closed) {
             g.setColor(Color.gray);
-            g.fillRect(x, y, width, height);
+            g.fillPolygon(door);
             g.setColor(Color.green);
             g.fillRect(buttonBounds.x, buttonBounds.y, buttonBounds.width, buttonBounds.height);
         } else {
             if (doorLight.lightOn) {
                 if (jonesy != null) {
-                    Image scaledImage = jonesy.getScaledInstance(width, height, Image.SCALE_DEFAULT);
-                    g.drawImage(scaledImage, x, y, null);
+                    Graphics2D g2 = (Graphics2D) g;
+                    Shape oldClip = g2.getClip();
+                    g2.setClip(door);
+                    g2.drawImage(jonesy, x, y, width, height, null);
+                    g2.setClip(oldClip);
                 }
             } else {
                 g.setColor(Color.BLACK);
@@ -86,6 +104,10 @@ public class Door {
         doorLight.handleMouseReleased(p);
     }
 
+    public void reset() {
+        closed = false;
+    }
+
 
     public Side getSide() { return side; }
     public int getX() { return x; }
@@ -102,7 +124,7 @@ public class Door {
         private static final int WINDOW_MARGIN = 5;
         private static final int SWITCH_MARGIN = 10;
 
-        private Rectangle window;
+        private Polygon window;
         private Rectangle lightSwitch;
 
         private boolean lightOn = false;
@@ -111,12 +133,24 @@ public class Door {
             int switchX, switchY;
             int switchSize = buttonSize;
 
-            int windowX = (side == Side.LEFT) ? x + width + WINDOW_MARGIN : x - width - WINDOW_MARGIN;
-            int windowY = y;
-            int windowWidth = width;
-            int windowHeight = height / 2;
+            int windowWidth = width / 2;
+            int windowHeight = height / 4;
+            int windowX = (side == Side.LEFT) ? x + width + WINDOW_MARGIN : x - windowWidth - WINDOW_MARGIN;
+            int windowY = (int) ((side == Side.LEFT) ? y + width * slopeFactor : y + windowWidth * slopeFactor + width * slopeFactor);
 
-            window = new Rectangle(windowX, windowY, windowWidth, windowHeight);
+            window = new Polygon();
+
+            if (side == Side.LEFT) {
+                window.addPoint(windowX, windowY);               // top-left
+                window.addPoint(windowX + windowWidth, (int) (windowY + windowWidth * slopeFactor));               // top-right
+                window.addPoint(windowX + windowWidth, (int) (windowY + windowHeight + slopeFactor * windowWidth));      // bottom-right
+                window.addPoint(windowX, (int) (windowY + windowHeight + slopeFactor * windowWidth));              // bottom-left
+            } else {
+                window.addPoint(windowX, windowY);               // top-left
+                window.addPoint(windowX + windowWidth, (int) (windowY - windowWidth * slopeFactor));               // top-right
+                window.addPoint(windowX + windowWidth, windowY + windowHeight);      // bottom-right
+                window.addPoint(windowX, windowY + windowHeight);              // bottom-left
+            }
 
             switchX = (side == Side.LEFT) ? x - switchSize - SWITCH_MARGIN : x + width + SWITCH_MARGIN;
             switchY = y + height / 2 - switchSize - 20;
@@ -139,8 +173,8 @@ public class Door {
         }
 
         public void draw(Graphics g) {
-            g.setColor(lightOn ? Color.WHITE : Color.DARK_GRAY);
-            g.fillRect(window.x, window.y, window.width, window.height);
+            g.setColor(lightOn ? Color.WHITE : Color.BLACK);
+            g.fillPolygon(window);
 
             g.setColor(lightOn ? Color.WHITE : Color.GRAY);
             g.fillRect(lightSwitch.x, lightSwitch.y, lightSwitch.width, lightSwitch.height);
