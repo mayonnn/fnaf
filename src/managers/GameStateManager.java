@@ -1,5 +1,8 @@
 package managers;
 
+/**
+ * Class to help handle the game state universally
+ */
 public class GameStateManager {
     public enum GameState {
         MENU,

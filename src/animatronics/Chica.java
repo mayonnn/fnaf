@@ -1,6 +1,8 @@
 package animatronics;
 
+import managers.GameStateManager;
 import managers.NightCycleManager;
+import views.OfficeView;
 
 public class Chica {
     private int[][] AILevel = {{0, 0, 0, 1, 2, 2}, //night 1, 12AM/1AM/2AM/3AM/4AM/5AM
@@ -15,9 +17,13 @@ public class Chica {
     private long lastMovementOpportunity;
 
     private NightCycleManager nightCycleManager;
+    private OfficeView officeView;
+    private GameStateManager gameStateManager;
 
-    public Chica(NightCycleManager nightCycleManager) {
+    public Chica(NightCycleManager nightCycleManager, OfficeView officeView, GameStateManager gameStateManager) {
         this.nightCycleManager = nightCycleManager;
+        this.officeView = officeView;
+        this.gameStateManager = gameStateManager;
     }
 
     public void update() {
@@ -26,8 +32,44 @@ public class Chica {
 
         int ai = AILevel[currentNight][currentHour];
         if (successfulMovement(ai)) {
-            //TODO
+            switch (location) {
+                case "1A":
+                    location = "1B";
+                    break;
+                case "1B":
+                    location = (Math.random() > 0.5) ? "7" : "6";
+                    break;
+                case "4A":
+                    location = "1B";
+                    break;
+                case "4B":
+                    location = "office";
+                    break;
+                case "6":
+                    location = (Math.random() > 0.5) ? "4A" : "7";
+                    break;
+                case "7":
+                    location = (Math.random() > 0.5) ? "4A" : "6";
+                    break;
+            }
+
+            System.out.println(location);
+
+            if (location.equals("office")) {
+                if (officeView.getDoorLeft().isClosed()) {
+                    location = "4A";
+                } else {
+                    //TODO: jumpscare
+                    gameStateManager.setGameState(GameStateManager.GameState.END);
+                }
+            }
         }
+
+        draw();
+    }
+
+    private void draw() {
+        
     }
 
     public void reset() {
@@ -36,6 +78,6 @@ public class Chica {
     }
 
     public boolean successfulMovement(int AI) {
-        return Math.random() > AI * 0.05;
+        return Math.random() < AI * 0.05;
     }
 }

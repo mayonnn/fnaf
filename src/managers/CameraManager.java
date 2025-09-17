@@ -11,6 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Handles the camera view.
+ * Draws the camera button, reacts to mouse actions and shows the corresponding images.
+ */
 public class CameraManager {
     private Rectangle cameraButton;
     private boolean cameraButtonClicked = false;
@@ -21,6 +25,9 @@ public class CameraManager {
     private PlayingScene.ViewState viewState = PlayingScene.ViewState.OFFICE;
     private PowerManager powerManager;
 
+    /**
+     * Creates the camera button at the bottom of the screen and initializes the camera map
+     */
     public CameraManager(int panelWidth, int panelHeight, PowerManager powerManager) {
         this.powerManager = powerManager;
 
@@ -56,10 +63,10 @@ public class CameraManager {
         cameraButtonClicked = !cameraButtonClicked;
         if (viewState == PlayingScene.ViewState.OFFICE) {
             viewState = PlayingScene.ViewState.CAMERA;
-            powerManager.increasePowerUsage();
+            powerManager.increasePowerUsage(); //power usage increases with camera usage
         } else if (viewState == PlayingScene.ViewState.CAMERA) {
             viewState = PlayingScene.ViewState.OFFICE;
-            powerManager.decreasePowerUsage();
+            powerManager.decreasePowerUsage(); //power usage goes back
         }
     }
 
@@ -81,7 +88,9 @@ public class CameraManager {
         return viewState;
     }
 
-
+    /**
+     * Inner class to handle the camera map, its buttons and images
+     */
     private class CameraMap {
         Map<String, Rectangle> camButtons = new HashMap<>();
         String selectedButton;

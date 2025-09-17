@@ -3,9 +3,9 @@ package managers;
 import scenes.TransitionScene;
 
 public class NightCycleManager {
-    private static final int DAY_LENGTH = 1000; //86000
+    private static final int DAY_LENGTH = 86000; //86000
 
-    private int currentNight = 6;
+    private int currentNight = 1;
     private int currentHour = 12;
     private long lastHourStartTime = System.currentTimeMillis();
 

@@ -14,6 +14,11 @@ import java.util.Map;
 import managers.*;
 import scenes.*;
 
+/**
+ * Central JPanel that coordinates game logic and rendering.
+ * It handles the different scenes and states.
+ */
+
 public class GamePanel extends JPanel implements Runnable, MouseListener, MouseMotionListener {
 
 
@@ -50,12 +55,18 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, MouseM
         scenes.put(GameStateManager.GameState.END, new EndScene(gameStateManager));
     }
 
+    /**
+     * starts game loop in its own thread
+     */
     public void startGame() {
         thread = new Thread(this);
         running = true;
         thread.start();
     }
 
+    /**
+     * rerenders and updates current state every 16ms(around 60 fps)
+     */
     @Override
     public void run() {
         while(running) {

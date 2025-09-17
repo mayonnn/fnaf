@@ -2,6 +2,10 @@ package managers;
 
 import java.awt.*;
 
+/**
+ * PowerManager helps handle power usage universally, keeping track of the current usage and power level.
+ * It renders the necessary stats and offers methods to change the current power usage.
+ */
 public class PowerManager {
     private static final int BASE_DRAIN_INTERVAL_MS = 6000;
 

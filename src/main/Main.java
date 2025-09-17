@@ -2,6 +2,9 @@ package main;
 
 import javax.swing.*;
 
+/**
+ * Creates a JFrame and starts the GamePanel loop
+ */
 public class Main {
     public static void main(String[] args) {
         JFrame window = new JFrame("super scary fnaf");
